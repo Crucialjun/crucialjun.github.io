@@ -48,10 +48,11 @@ nav {
 	display: flex;
 	justify-content: space-between;
 	padding: 0 50px;
-	margin: 50px 0;
+	margin: 60px 0;
 	align-items: center;
 	gap: 40px;
 	margin: bottom 100px;
+	
 	
 }
 
@@ -116,6 +117,15 @@ nav {
 
 .nav_right span {
 	margin-left: 10px;
+}
+
+.nav_whatsapp {
+
+
+	width: 180px;
+	height: 50px;
+	
+	
 }
 
 /* Skills */
@@ -412,10 +422,7 @@ nav {
 }
 
 @media (max-width: 801px) {
-	nav {
-		flex-direction: column;
-		padding: 0 20px;
-	}
+	
 
 	.nav_right a {
 		font-size: 22px;
@@ -488,4 +495,24 @@ nav {
 		align-items: center;
 		padding: 0 20px;
 	}
+
+	
+}
+
+@media (max-width : 1020px) {
+	nav {
+		flex-direction: column;
+		padding: 0 20px;
+	}
+
+	nav .nav_left {
+		margin-bottom: 20px;
+	}
+	
+
+	nav .nav_whatsapp{
+		margin-top: 10px;
+		margin-bottom: 20px;
+	}
+
 }
