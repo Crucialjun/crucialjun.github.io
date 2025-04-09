@@ -274,7 +274,7 @@ nav {
 .projects-section .projects-group .project-item a  img{
 	width: 120px;
 	height: 40px;
-	object-fit: cover;
+	object-fit: contain;
 	border-radius: 16px;
 
 	
