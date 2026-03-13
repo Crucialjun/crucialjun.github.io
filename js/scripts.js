@@ -4,6 +4,62 @@
 
 window.addEventListener("DOMContentLoaded", () => {
 
+  /* ── Theme management ─────────────────────────── */
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeIcon   = themeToggle ? themeToggle.querySelector("i") : null;
+
+  // Cycles: system → light → dark → system
+  const THEMES = ["system", "light", "dark"];
+  const ICONS  = {
+    system: "fa-circle-half-stroke",
+    light:  "fa-sun",
+    dark:   "fa-moon",
+  };
+  const LABELS = {
+    system: "Using system color mode — click to switch to light",
+    light:  "Light mode — click to switch to dark",
+    dark:   "Dark mode — click to switch to system",
+  };
+
+  function getStoredTheme() {
+    return localStorage.getItem("theme") || "system";
+  }
+
+  function applyTheme(theme) {
+    const html = document.documentElement;
+    if (theme === "system") {
+      html.removeAttribute("data-theme");
+    } else {
+      html.setAttribute("data-theme", theme);
+    }
+    localStorage.setItem("theme", theme);
+    if (themeIcon && themeToggle) {
+      themeIcon.className = "fa-solid " + ICONS[theme];
+      themeToggle.setAttribute("aria-label", LABELS[theme]);
+    }
+  }
+
+  function cycleTheme() {
+    const current = getStoredTheme();
+    const next = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
+    applyTheme(next);
+  }
+
+  // Apply stored/default theme immediately (anti-FOUC script handles
+  // initial paint; this syncs the icon state)
+  applyTheme(getStoredTheme());
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", cycleTheme);
+  }
+
+  // Keep icon in sync when OS preference changes while in "system" mode
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (getStoredTheme() === "system") {
+      applyTheme("system"); // no-op on DOM, just resyncs icon
+    }
+  });
+
   /* ── Navbar scroll effect ─────────────────────── */
   const navbar = document.getElementById("navbar");
   window.addEventListener("scroll", () => {
