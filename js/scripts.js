@@ -224,9 +224,9 @@ window.addEventListener("DOMContentLoaded", () => {
     function draw() {
       ctx.clearRect(0, 0, W, H);
       const dark = isDarkMode();
-      const r = dark ? 124 : 80;
-      const g = dark ? 107 : 60;
-      const b = dark ? 255 : 200;
+      const r = dark ? 224 : 200;
+      const g = dark ?  92 :  78;
+      const b = dark ?  48 :  24;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
