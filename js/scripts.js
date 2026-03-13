@@ -180,4 +180,93 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /* ── Hero particle effect (Antigravity) ───────── */
+  (function initHeroParticles() {
+    const canvas = document.getElementById("hero-particles");
+    if (!canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const ctx = canvas.getContext("2d");
+    const hero = document.getElementById("hero");
+    let W, H, particles, rafId;
+
+    function isDarkMode() {
+      const t = document.documentElement.getAttribute("data-theme");
+      if (t === "dark") return true;
+      if (t === "light") return false;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+
+    function resize() {
+      W = canvas.width  = hero.offsetWidth;
+      H = canvas.height = hero.offsetHeight;
+      if (!particles) spawnParticles();
+    }
+
+    function makeParticle(initial) {
+      return {
+        x:        Math.random() * (W || window.innerWidth),
+        y:        initial ? Math.random() * (H || window.innerHeight) : (H || window.innerHeight) + 12,
+        speedY:   0.25 + Math.random() * 0.6,
+        driftX:   (Math.random() - 0.5) * 0.18,
+        angle:    Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.008,
+        len:      4 + Math.random() * 6,
+        opacity:  0.12 + Math.random() * 0.38,
+      };
+    }
+
+    function spawnParticles() {
+      const count = Math.min(130, Math.max(60, Math.floor((W * H) / 7500)));
+      particles = Array.from({ length: count }, (_, i) => makeParticle(true));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const dark = isDarkMode();
+      const r = dark ? 124 : 80;
+      const g = dark ? 107 : 60;
+      const b = dark ? 255 : 200;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.strokeStyle = `rgba(${r},${g},${b},${p.opacity})`;
+        ctx.lineWidth   = 1.5;
+        ctx.lineCap     = "round";
+        ctx.beginPath();
+        ctx.moveTo(-p.len / 2, 0);
+        ctx.lineTo( p.len / 2, 0);
+        ctx.stroke();
+        ctx.restore();
+
+        p.y     -= p.speedY;
+        p.x     += p.driftX;
+        p.angle += p.rotSpeed;
+
+        if (p.y < -20 || p.x < -20 || p.x > W + 20) {
+          particles[i] = makeParticle(false);
+        }
+      }
+      rafId = requestAnimationFrame(draw);
+    }
+
+    // Pause when hero is off-screen (performance)
+    const pauseObserver = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        if (!rafId) draw();
+      } else {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }, { threshold: 0 });
+    pauseObserver.observe(hero);
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    draw();
+  })();
+
 });
