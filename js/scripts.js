@@ -1,260 +1,127 @@
-/*!
- * Portfolio Animations and Interactions
- * Professional-grade animations with performance optimization
+﻿/*!
+ * Nicholas Otieno - Portfolio Scripts
  */
 
-window.addEventListener("DOMContentLoaded", (event) => {
-	// Enhanced scroll animations with Intersection Observer
-	const observerOptions = {
-		threshold: 0.15,
-		rootMargin: "0px 0px -100px 0px",
-	};
+window.addEventListener("DOMContentLoaded", () => {
 
-	const fadeInObserver = new IntersectionObserver((entries) => {
-		entries.forEach((entry) => {
-			if (entry.isIntersecting) {
-				entry.target.style.opacity = "1";
-				entry.target.style.transform = "translateY(0)";
-				entry.target.classList.add("animated");
-			}
-		});
-	}, observerOptions);
+  /* ── Navbar scroll effect ─────────────────────── */
+  const navbar = document.getElementById("navbar");
+  window.addEventListener("scroll", () => {
+    navbar.classList.toggle("scrolled", window.scrollY > 40);
+  }, { passive: true });
 
-	// Observe all major sections
-	document.querySelectorAll("section").forEach((section) => {
-		section.style.opacity = "0";
-		section.style.transform = "translateY(50px)";
-		section.style.transition =
-			"opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1)";
-		fadeInObserver.observe(section);
-	});
+  /* ── Mobile nav toggle ────────────────────────── */
+  const toggle = document.querySelector(".nav-toggle");
+  const navLinks = document.querySelector(".nav-links");
 
-	// Staggered animation for skill cells
-	const skillCells = document.querySelectorAll(".skills-section .cell");
-	skillCells.forEach((cell, index) => {
-		cell.style.opacity = "0";
-		cell.style.transform = "translateY(30px) scale(0.95)";
-		cell.style.transition = `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${
-			index * 0.05
-		}s`;
+  if (toggle && navLinks) {
+    toggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    });
 
-		const cellObserver = new IntersectionObserver((entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					entry.target.style.opacity = "1";
-					entry.target.style.transform = "translateY(0) scale(1)";
-				}
-			});
-		}, observerOptions);
+    // Close on link click
+    navLinks.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    });
 
-		cellObserver.observe(cell);
-	});
+    // Close on outside click
+    document.addEventListener("click", (e) => {
+      if (!navbar.contains(e.target)) {
+        navLinks.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
 
-	// Elegant project card animations
-	const projectItems = document.querySelectorAll(".project-item");
-	projectItems.forEach((item, index) => {
-		item.style.opacity = "0";
-		item.style.transform = "scale(0.95) translateY(30px)";
-		item.style.transition = `all 0.7s cubic-bezier(0.4, 0, 0.2, 1) ${
-			index * 0.08
-		}s`;
+  /* ── Smooth scroll with nav offset ───────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener("click", function (e) {
+      const href = this.getAttribute("href");
+      if (href === "#") return;
+      const target = document.querySelector(href);
+      if (!target) return;
+      e.preventDefault();
+      const offsetTop = target.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: offsetTop, behavior: "smooth" });
+    });
+  });
 
-		const projectObserver = new IntersectionObserver((entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					entry.target.style.opacity = "1";
-					entry.target.style.transform = "scale(1) translateY(0)";
-				}
-			});
-		}, observerOptions);
+  /* ── Reveal on scroll ─────────────────────────── */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        // Stagger siblings
+        const siblings = entry.target.parentElement
+          ? Array.from(entry.target.parentElement.querySelectorAll(".reveal"))
+          : [];
+        const idx = siblings.indexOf(entry.target);
+        const delay = idx * 80;
+        setTimeout(() => {
+          entry.target.classList.add("visible");
+        }, delay);
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: "0px 0px -60px 0px" });
 
-		projectObserver.observe(item);
-	});
+  document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
 
-	// Smooth parallax for profile image (subtle and performant)
-	const profileImage = document.querySelector("#welcome .profile_image img");
-	let ticking = false;
+  /* ── Active nav link highlighting ─────────────── */
+  const sections = document.querySelectorAll("section[id]");
+  const links = document.querySelectorAll(".nav-links a");
 
-	if (profileImage) {
-		window.addEventListener(
-			"scroll",
-			() => {
-				if (!ticking) {
-					window.requestAnimationFrame(() => {
-						const scrolled = window.pageYOffset;
-						const rate = scrolled * 0.15;
-						profileImage.style.transform = `translateY(${rate}px)`;
-						ticking = false;
-					});
-					ticking = true;
-				}
-			},
-			{ passive: true }
-		);
-	}
+  const highlightNav = () => {
+    let current = "";
+    sections.forEach(section => {
+      if (window.scrollY >= section.offsetTop - 120) {
+        current = section.id;
+      }
+    });
+    links.forEach(link => {
+      link.style.color = "";
+      const href = link.getAttribute("href");
+      if (href === "#" + current) {
+        link.style.color = "var(--accent-light)";
+      }
+    });
+  };
+  window.addEventListener("scroll", highlightNav, { passive: true });
+  highlightNav();
 
-	// Smooth scroll with offset for fixed nav
-	document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-		anchor.addEventListener("click", function (e) {
-			const href = this.getAttribute("href");
-			if (href === "#") return;
+  /* ── Contact form feedback ────────────────────── */
+  const form = document.querySelector(".contact-form");
+  if (form) {
+    form.addEventListener("submit", function (e) {
+      const btn = this.querySelector("button[type=submit]");
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+      // Formspree handles actual submission; re-enable after delay
+      setTimeout(() => {
+        btn.textContent = "Send Message";
+        btn.disabled = false;
+      }, 4000);
+    });
 
-			e.preventDefault();
-			const target = document.querySelector(href);
-			if (target) {
-				const offsetTop = target.offsetTop - 80;
-				window.scrollTo({
-					top: offsetTop,
-					behavior: "smooth",
-				});
-			}
-		});
-	});
+    // Input focus ring styling
+    form.querySelectorAll("input, textarea").forEach(input => {
+      input.addEventListener("focus", () => {
+        input.closest(".form-group").querySelector("label").style.color = "var(--accent-light)";
+      });
+      input.addEventListener("blur", () => {
+        input.closest(".form-group").querySelector("label").style.color = "";
+      });
+    });
+  }
 
-	// Enhanced navbar scroll effect
-	const nav = document.querySelector("nav");
-	let lastScroll = 0;
+  /* ── Respect reduced motion ───────────────────── */
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".reveal").forEach(el => {
+      el.classList.add("visible");
+    });
+  }
 
-	window.addEventListener(
-		"scroll",
-		() => {
-			const currentScroll = window.pageYOffset;
-
-			if (currentScroll > 100) {
-				nav.classList.add("scrolled");
-			} else {
-				nav.classList.remove("scrolled");
-			}
-
-			lastScroll = currentScroll;
-		},
-		{ passive: true }
-	);
-
-	// Form submission with elegant feedback
-	const contactForm = document.querySelector(".contact-section form");
-	if (contactForm) {
-		contactForm.addEventListener("submit", function (e) {
-			e.preventDefault();
-			const button = this.querySelector("button");
-			const originalText = button.textContent;
-
-			// Disable button and show loading state
-			button.disabled = true;
-			button.style.transform = "scale(0.98)";
-			button.innerHTML = '<span style="opacity: 0.7;">Sending...</span>';
-
-			// Simulate sending (replace with actual form submission)
-			setTimeout(() => {
-				button.innerHTML = "✓ Sent Successfully!";
-				button.style.background =
-					"linear-gradient(135deg, #10b981 0%, #059669 100%)";
-				button.style.boxShadow = "0 20px 50px rgba(16, 185, 129, 0.4)";
-
-				setTimeout(() => {
-					button.style.transform = "scale(1)";
-					button.innerHTML = originalText;
-					button.style.background = "";
-					button.style.boxShadow = "";
-					button.disabled = false;
-					this.reset();
-				}, 2500);
-			}, 1500);
-		});
-
-		// Real-time input validation styling
-		const inputs = contactForm.querySelectorAll("input, textarea");
-		inputs.forEach((input) => {
-			input.addEventListener("input", function () {
-				if (this.value.length > 0) {
-					this.style.borderColor = "var(--success-color)";
-				} else {
-					this.style.borderColor = "var(--border-color)";
-				}
-			});
-
-			input.addEventListener("blur", function () {
-				if (this.value.length === 0) {
-					this.style.borderColor = "var(--border-color)";
-				}
-			});
-		});
-	}
-
-	// Typing effect for welcome heading (optional, can be disabled)
-	const welcomeHeading = document.querySelector("#welcome h2");
-	if (welcomeHeading && window.innerWidth > 768) {
-		const text = welcomeHeading.textContent;
-		welcomeHeading.textContent = "";
-		welcomeHeading.style.opacity = "1";
-		let i = 0;
-
-		const typeWriter = () => {
-			if (i < text.length) {
-				welcomeHeading.textContent += text.charAt(i);
-				i++;
-				setTimeout(typeWriter, 40);
-			}
-		};
-
-		setTimeout(typeWriter, 600);
-	}
-
-	// Active navigation highlighting
-	const sections = document.querySelectorAll("section[id]");
-	const navLinks = document.querySelectorAll('.nav_right a[href^="#"]');
-
-	const highlightNav = () => {
-		let current = "";
-		const scrollPos = window.pageYOffset + 200;
-
-		sections.forEach((section) => {
-			const sectionTop = section.offsetTop;
-			const sectionHeight = section.clientHeight;
-			if (
-				scrollPos >= sectionTop &&
-				scrollPos < sectionTop + sectionHeight
-			) {
-				current = section.getAttribute("id");
-			}
-		});
-
-		navLinks.forEach((link) => {
-			link.style.color = "";
-			link.style.fontWeight = "";
-			if (link.getAttribute("href") === `#${current}`) {
-				link.style.color = "var(--primary-color)";
-				link.style.fontWeight = "700";
-			}
-		});
-	};
-
-	window.addEventListener("scroll", highlightNav, { passive: true });
-	highlightNav();
-
-	// Add smooth hover effects to all interactive elements
-	const interactiveElements = document.querySelectorAll(
-		"a, button, .cell, .project-item, .testimony-item"
-	);
-	interactiveElements.forEach((el) => {
-		el.style.willChange = "auto";
-
-		el.addEventListener("mouseenter", function () {
-			this.style.willChange = "transform";
-		});
-
-		el.addEventListener("mouseleave", function () {
-			this.style.willChange = "auto";
-		});
-	});
-
-	// Performance optimization: Disable animations on low-end devices
-	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-		document.querySelectorAll("*").forEach((el) => {
-			el.style.animation = "none";
-			el.style.transition = "none";
-		});
-	}
-
-	console.log("🚀 Portfolio loaded successfully!");
 });
